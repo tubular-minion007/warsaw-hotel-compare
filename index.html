@@ -50,7 +50,7 @@
           </div>
         </div>
         <div class="small-note subtle mt-2">
-          Distances/prices vary by availability. Use <strong>Directions</strong> to check walking/transit time.
+          Prices below are <strong>rough estimates</strong> (they will vary a lot). Always click <strong>Check availability</strong> for the real price, cancellation and breakfast options.
         </div>
       </div>
     </div>
@@ -73,13 +73,16 @@
     addr: 'Piękna 12, 00-540 Warszawa, Poland'
   };
 
-  // Shortlist (budget-ish, central-ish). Distances are intentionally not hardcoded.
+  // Shortlist (budget-ish, central-ish). Price + time are rough estimates to compare options.
   const HOTELS = [
     {
       id: 'reytan',
       name: 'Hotel Reytan',
       area: 'Stary Mokotów (quiet-ish, still close)',
       why: 'Often good value; calm neighborhood; short ride to Piękna 12.',
+      walkMin: 30,
+      taxiMin: 10,
+      price: { eurMin: 55, eurMax: 95 },
       links: {
         official: 'https://www.reytan.pl/en/',
         booking: 'https://www.booking.com/searchresults.html?ss=Hotel+Reytan+Warsaw&checkin=2026-05-05&checkout=2026-05-06&group_adults=1&no_rooms=1&group_children=0'
@@ -91,6 +94,9 @@
       name: 'Hotel MDM City Centre',
       area: 'Plac Konstytucji / Śródmieście',
       why: 'Great location for consular errands; usually reasonable prices.',
+      walkMin: 15,
+      taxiMin: 6,
+      price: { eurMin: 60, eurMax: 120 },
       links: {
         booking: 'https://www.booking.com/searchresults.html?ss=Hotel+MDM+Warsaw&checkin=2026-05-05&checkout=2026-05-06&group_adults=1&no_rooms=1&group_children=0'
       },
@@ -101,6 +107,9 @@
       name: 'Metropol Hotel',
       area: 'Warsaw Centrum (very central)',
       why: 'Super central base; easy transit to Piękna 12.',
+      walkMin: 20,
+      taxiMin: 7,
+      price: { eurMin: 70, eurMax: 140 },
       links: {
         official: 'https://www.hotelmetropol.com.pl/',
         booking: 'https://www.booking.com/searchresults.html?ss=Metropol+Hotel+Warsaw&checkin=2026-05-05&checkout=2026-05-06&group_adults=1&no_rooms=1&group_children=0'
@@ -112,6 +121,9 @@
       name: 'ibis Styles Warszawa Centrum',
       area: 'Chain reliability; usually predictable price/quality',
       why: 'Often predictable and fairly priced; clean chain standard.',
+      walkMin: 35,
+      taxiMin: 10,
+      price: { eurMin: 65, eurMax: 125 },
       links: {
         booking: 'https://www.booking.com/searchresults.html?ss=ibis+Styles+Warszawa+Centrum&checkin=2026-05-05&checkout=2026-05-06&group_adults=1&no_rooms=1&group_children=0'
       },
@@ -159,6 +171,11 @@
               <div>
                 <div class="h5 mb-1">${escapeHtml(h.name)}</div>
                 <div class="subtle">${escapeHtml(h.area)}</div>
+                <div class="mt-2 d-flex flex-wrap gap-2">
+                  ${h.walkMin ? `<span class="chip">🚶 ~${h.walkMin} min</span>` : ""}
+                  ${h.taxiMin ? `<span class="chip">🚕 ~${h.taxiMin} min</span>` : ""}
+                  ${h.price ? `<span class="chip">💶 est. €${h.price.eurMin}–€${h.price.eurMax}/night</span>` : ""}
+                </div>
               </div>
               <a class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener" href="${mapsDirectionsLink(h.name + ', Warsaw')}">Directions</a>
             </div>
@@ -190,7 +207,13 @@
   $('sort').addEventListener('change', render);
   $('reset').addEventListener('click', () => { $('q').value=''; $('sort').value='best'; render(); });
   $('copy').addEventListener('click', async () => {
-    const lines = HOTELS.map((h,i)=>`${i+1}. ${h.name} — ${h.links.booking || h.links.official || ''}`);
+    const lines = HOTELS.map((h,i)=>{
+      const price = h.price ? `€${h.price.eurMin}–€${h.price.eurMax}` : '?';
+      const walk = h.walkMin ? `~${h.walkMin}min walk` : '';
+      const taxi = h.taxiMin ? `~${h.taxiMin}min taxi` : '';
+      const meta = [price, walk, taxi].filter(Boolean).join(' • ');
+      return `${i+1}. ${h.name} — ${meta} — ${(h.links.booking || h.links.official || '')}`;
+    });
     const text = `Warsaw hotel shortlist (U.S. Embassy Piękna 12) — 5–6 May 2026\n\n` + lines.join('\n');
     try { await navigator.clipboard.writeText(text); alert('Copied ✅'); }
     catch { prompt('Copy:', text); }
